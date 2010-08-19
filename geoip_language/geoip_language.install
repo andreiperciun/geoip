@@ -1,0 +1,50 @@
+<?php
+// $Id: geoip_language.install,v 1.1 2009/07/13 01:37:15 rz Exp $
+
+/**
+ * @file
+ * file_description
+ */
+
+/**
+ * Implementation of hook_schema().
+ */
+function geoip_language_schema() {
+  $schema['geoip_language'] = array(
+    'description' => 'Table to store geoip country to language mappings.',
+    'fields' => array(
+      'country' => array(
+        'type' => 'char',
+        'length' => 2,
+        'not null' => TRUE,
+        'description' => 'Country code, as defined in http://www.maxmind.com/app/iso3166.',
+      ),
+      'language' => array(
+        'type' => 'varchar',
+        'length' => 12,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Language code, as defined in the languages table.',
+      ),
+    ),
+    'primary key' => array('country'),
+  );
+  return $schema;
+}
+
+/**
+ * Implementation of hook_disable().
+ */
+function geoip_language_disable() {
+  $language_negotiation = variable_get('language_negotiation_language',array());
+  if (isset($language_negotiation[GEOIP_LANGUAGE_NEGOTIATION])) {
+    unset($language_negotiation[GEOIP_LANGUAGE_NEGOTIATION]);
+    variable_set('language_negotiation_language', $language_negotiation);
+  }
+  $providers_weight_language = variable_get('locale_language_providers_weight_language', array());
+  if (isset($providers_weight_language[GEOIP_LANGUAGE_NEGOTIATION])) {
+    unset($providers_weight_language[GEOIP_LANGUAGE_NEGOTIATION]);
+    variable_set('locale_language_providers_weight_language', $providers_weight_language);
+  }
+  cache_clear_all('geoip_language_mappings', 'cache');
+}
