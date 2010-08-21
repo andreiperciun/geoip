@@ -8,6 +8,8 @@
 
 /**
  * Implementation of hook_menu().
+ * 
+ * @return array
  */
 function geoip_menu() {
   $items['admin/config/system/geoip'] = array(
@@ -24,6 +26,9 @@ function geoip_menu() {
 
 /**
  * Implementation of hook_requirements().
+ * 
+ * @param string $phase
+ * @return array
  */
 function geoip_requirements($phase) {
   $requirements = array();
@@ -59,6 +64,8 @@ function geoip_requirements($phase) {
 
 /**
  * Helper function to get the current ip address
+ * 
+ * @return string
  */
 function geoip_ip_address() {
   if (variable_get('geoip_debug', FALSE) && isset($_GET['geoip_debug'])) {
@@ -73,6 +80,8 @@ function geoip_ip_address() {
 
 /**
  * Singleton wrapper around geoip_open().
+ * 
+ * @return ressource|false
  */
 function geoip_instance() {
   $data_file = geoip_data_file();
@@ -96,6 +105,8 @@ function geoip_instance() {
  * Get the file path of the geoip module.  This is a wrapper around
  * drupal_get_path() that falls back to simply using the directory of the
  * module file if too early in the bootstrap.
+ * 
+ * @return string
  */
 function geoip_get_path() {
   if (function_exists('drupal_get_path')) {
@@ -112,6 +123,8 @@ function geoip_get_path() {
 
 /**
  * Return the path of the GeoIP.dat data file.
+ * 
+ * @return string
  */
 function geoip_data_file() {
   return variable_get('geoip_data_file', 'sites/all/libraries/geoip/GeoIP.dat');
@@ -122,6 +135,7 @@ function geoip_data_file() {
  *
  * @param
  *   The file to be included.  Must reside in the lib sub-directory.
+*   @return void
  */
 function _geoip_load_lib($file = 'geoip.inc') {
   static $loaded = array();
@@ -130,7 +144,7 @@ function _geoip_load_lib($file = 'geoip.inc') {
   // through.
   if (!isset($loaded[$file])) {
     $loaded[$file] = TRUE;
-    include_once(geoip_get_path() . '/lib/'. $file);
+    include_once geoip_get_path() . '/lib/' . $file;
   }
 }
 
@@ -144,6 +158,9 @@ function _geoip_load_lib($file = 'geoip.inc') {
  * API function to return the country code for a given IP. Defaults to using the
  * current user's IP if not specified. This function works with both the country
  * and city level databases.
+ * 
+ * @return string
+ *  Country Code
  */
 function geoip_country_code($ip = NULL) {
   $ip = $ip ? $ip : geoip_ip_address();
@@ -164,6 +181,9 @@ function geoip_country_code($ip = NULL) {
  * API function to return the city data for a given IP. Defaults to using the
  * current user's IP if not specified. This function only works with the city
  * level database and will return false in all other cases.
+ * 
+ * @return geoiprecord|false
+ *  City name
  */
 function geoip_city($ip = NULL) {
   $ip = $ip ? $ip : geoip_ip_address();
@@ -189,11 +209,13 @@ function geoip_city($ip = NULL) {
  * API function to retrieve the region name, given a country code and region
  * code. This function relies on the geoipregionvars.php file, which is just a
  * huge array.
+ * 
+ * @return string
  */
 function geoip_region_name($country_code, $region_code) {
   static $GEOIP_REGION_NAME;
   if (!isset($GEOIP_REGION_NAME)) {
-    include drupal_get_path('module', 'geoip') .'/lib/geoipregionvars.php';
+    include drupal_get_path('module', 'geoip') . '/lib/geoipregionvars.php';
   }
 
   return $GEOIP_REGION_NAME[$country_code][$region_code];
@@ -201,6 +223,9 @@ function geoip_region_name($country_code, $region_code) {
 
 /**
  * Return a list of country codes as specified by http://www.maxmind.com/app/iso3166
+ * 
+ * @return array
+ *  Associative array wit the country code as key, and the country name as value
  */
 function geoip_country_values() {
   static $countries = NULL;

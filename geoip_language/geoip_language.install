@@ -8,6 +8,8 @@
 
 /**
  * Implementation of hook_schema().
+ * 
+ * @return array
  */
 function geoip_language_schema() {
   $schema['geoip_language'] = array(
@@ -34,9 +36,11 @@ function geoip_language_schema() {
 
 /**
  * Implementation of hook_disable().
+ * 
+ * @return void
  */
 function geoip_language_disable() {
-  $language_negotiation = variable_get('language_negotiation_language',array());
+  $language_negotiation = variable_get('language_negotiation_language', array());
   if (isset($language_negotiation[GEOIP_LANGUAGE_NEGOTIATION])) {
     unset($language_negotiation[GEOIP_LANGUAGE_NEGOTIATION]);
     variable_set('language_negotiation_language', $language_negotiation);

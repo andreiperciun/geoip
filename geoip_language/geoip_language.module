@@ -8,13 +8,20 @@
 
 /**
  * Language negotiation option for GeoIP detection.
+ * @var integer
  */
 define('GEOIP_LANGUAGE_NEGOTIATION_PATH', 8);
 
+/**
+ * Key to recognize this language provider
+ * @var string
+ */
 define('GEOIP_LANGUAGE_NEGOTIATION', 'geoip-language-negotiation');
 
 /**
  * Implementation of hook_help().
+ * 
+ * @return string
  */
 function geoip_language_help($path, $arg) {
   switch ($path) {
@@ -26,10 +33,12 @@ function geoip_language_help($path, $arg) {
 
 /**
  * Implementation of hook_menu().
+ * 
+ * @return array
  */
 function geoip_language_menu() {
   $items = array();
-//admin/config/regional/language/configure/geoip
+
   $items['admin/config/regional/language/configure/geoip'] = array(
     'title' => 'GeoIP',
     'weight' => 5,
@@ -52,6 +61,8 @@ function geoip_language_menu() {
 
 /**
 * Implements hook_language_negotiation_info()
+* 
+* @return array
 */
 function geoip_language_language_negotiation_info() {
   return array(GEOIP_LANGUAGE_NEGOTIATION => array(
@@ -73,6 +84,9 @@ function geoip_language_language_negotiation_info() {
 /**
 * Identify language via URL prefix or domain excluding administrative paths.
 * Try to keep as light weight as possible
+* 
+* @return string
+*   Language as ISO 639-1 Code
 */
 function language_negotiation_from_geoip($languages) {
   // Use the core URL language provider to get a valid language code.
@@ -89,44 +103,53 @@ function language_negotiation_from_geoip($languages) {
  * language_url_rewrite() doesn't add the path prefix for the default language,
  * so we are doing it here.  This lessens the amount of redirection that
  * would occur because of a missing path prefix.
+ * 
+ * @todo Function disabled - looks like this is not necessary anymore in D7
+ * 
+ * @return void
  */
-if (!function_exists('custom_url_rewrite_outbound')) {
-  function custom_url_rewrite_outbound(&$path, &$options, $original_path) {
-    global $language;
-
-    if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) == GEOIP_LANGUAGE_NEGOTIATION_PATH
-      && ((int)variable_get('language_count', 1) > 1)) {
-      // Only modify relative (insite) URLs.
-      if (!$options['external']) {
-
-        // Allow links to bypass the language prefixing.  Helpful for simpletest.
-        // Breaking forms as of 2009-06-22
-//        if (isset($options['geoip_language_no_prefix']) && ($options['geoip_language_no_prefix'] === TRUE)) {
-//          return;
+function _geoip_language_url_outbound_alter(&$path, &$options, $original_path) {
+//    global $language;
+//
+//    if (variable_get('language_negotiation', LANGUAGE_NEGOTIATION_NONE) == GEOIP_LANGUAGE_NEGOTIATION_PATH
+//      && ((int) variable_get('language_count', 1) > 1)) {
+//      // Only modify relative (insite) URLs.
+//      if (!$options['external']) {
+//
+//        // Allow links to bypass the language prefixing.  Helpful for simpletest.
+//        // Breaking forms as of 2009-06-22
+////        if (isset($options['geoip_language_no_prefix']) && ($options['geoip_language_no_prefix'] === TRUE)) {
+////          return;
+////        }
+//
+//        // Language can be passed as an option, or we go for current language.
+//        if (!isset($options['language'])) {
+//          $options['language'] = $language;
 //        }
-
-        // Language can be passed as an option, or we go for current language.
-        if (!isset($options['language'])) {
-          $options['language'] = $language;
-        }
-
-        if (!empty($options['language']->prefix)) {
-          $options['prefix'] = $options['language']->prefix .'/';
-        }
-      }
-    }
-  }
+//
+//        if (!empty($options['language']->prefix)) {
+//          $options['prefix'] = $options['language']->prefix . '/';
+//        }
+//      }
+//    }
 }
 
 /**
  * Implementation of hook_form_locale_languages_configure_form_alter().
+ * 
+ * @return void
  */
-function geoip_language_form_locale_languages_configure_form_alter(&$form, $form_state) {
+function geoip_language_form_locale_languages_configure_form_alter(
+  &$form, 
+  $form_state
+) {
   $form['language_negotiation']['#options'][GEOIP_LANGUAGE_NEGOTIATION_PATH] = t('Path prefix with GeoIP detection fallback.');
 }
 
 /**
  * API function to create a new mapping.
+ * 
+ * @return array
  */
 function geoip_language_mapping_create($country, $language) {
   $data = array(
@@ -136,15 +159,21 @@ function geoip_language_mapping_create($country, $language) {
   drupal_write_record('geoip_language', $data);
 
   $countries = geoip_country_values();
-  watchdog('geoip_language', 'GeoIP mapping created for %country', array('%country' => $countries[$country]));
+  watchdog(
+    'geoip_language', 
+    'GeoIP mapping created for %country', 
+    array('%country' => $countries[$country])
+  );
 
-  geoip_language_mappings(true);
+  geoip_language_mappings(TRUE);
   
   return $data;
 }
 
 /**
  * API function to delete a mapping.
+ * 
+ * @return boolean
  */
 function geoip_language_mapping_delete($country) {
   //On error an Exception is thrown
@@ -153,11 +182,15 @@ function geoip_language_mapping_delete($country) {
             ->execute();
 
   $countries = geoip_country_values();
-  watchdog('geoip_language', 'GeoIP mapping deleted for %country', array('%country' => $countries[$country]));
+  watchdog(
+    'geoip_language', 
+    'GeoIP mapping deleted for %country', 
+    array('%country' => $countries[$country])
+  );
 
   geoip_language_mappings(TRUE);
   
-  return true;
+  return TRUE;
 }
 
 /**
@@ -165,13 +198,16 @@ function geoip_language_mapping_delete($country) {
  *
  * TODO: Serializing to a text file is insane. This should go into the cache
  * table instead.
+ * 
+ * @return array
+ *  Associative array key=countrycode, value= Language as ISO 639-1 Code
  */
 function geoip_language_mappings($reset = FALSE) {
   static $mapping = NULL;
 
   if ($reset || !isset($mapping)) {
     $data = cache_get(__METHOD__);
-    if ($data!=FALSE) {
+    if ($data != FALSE) {
       $mapping = isset($data->data['geoip']) ? $data->data['geoip'] : NULL;
     }
 
@@ -182,8 +218,13 @@ function geoip_language_mappings($reset = FALSE) {
         'geoip' => array(),
         'default' => language_default('prefix'),
       );
-      $result = db_query('SELECT g.*, l.prefix FROM {geoip_language} g INNER JOIN {languages} l on g.language = l.language ORDER BY g.country ASC');
-      foreach($result as $row){
+      $result = db_query(
+        'SELECT g.*, l.prefix ' .
+        'FROM {geoip_language} g ' .
+        'INNER JOIN {languages} l on g.language = l.language ' .
+        'ORDER BY g.country ASC'
+      );
+      foreach ($result as $row) {
         $mapping[$row->country] = $row->language;
         $data['geoip'][$row->country] = $row;
       }
@@ -196,6 +237,10 @@ function geoip_language_mappings($reset = FALSE) {
 
 /**
  * Return the language object mapped to the current GeoIP detected country.
+ * 
+ * @return string
+ *  Language as ISO 639-1 Code 
+ *  @link http://de.wikipedia.org/wiki/ISO_639#ISO_639-1  @endlink
  */
 function geoip_language_detect_language($reset = FALSE) {
   static $geoip_language = NULL;
@@ -212,20 +257,26 @@ function geoip_language_detect_language($reset = FALSE) {
       $geoip_language = $mappings[$country_code]->language;
     }
   }
-
   return $geoip_language;
 }
 
 /**
  * Implementation of hook_flush_caches().
+ * 
+ * @return array
+ *  Return an empty array - we do the flush ourselfes
  */
 function geoip_language_flush_caches() {
   // Reload the geoip cache file.
   geoip_language_mappings(TRUE);
-
   return array();
 }
 
+/**
+ * Implementation of hook_theme().
+ * 
+ * @return array()
+ */
 function geoip_language_theme() {
   return array(
     'geoip_language_mapping_overview' => array(
