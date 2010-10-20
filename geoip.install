@@ -9,7 +9,7 @@
 /**
  * We're changing the default path. If it's been working for them make sure
  * it is set and not relying on the default value.
- * 
+ *
  * @return array
  */
 function geoip_update_6000() {

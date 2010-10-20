@@ -8,7 +8,7 @@
 
 /**
  * Create the overview table of the already existing mappgins
- * 
+ *
  * @param array $languages
  * @return string
  *  HTML Table
@@ -19,7 +19,7 @@ function theme_geoip_language_mapping_overview($languages) {
   $mapping = geoip_language_mappings(TRUE);
 
   $output = NULL;
-  
+
   $rows = array();
   foreach ($mapping as $country => $language) {
     $rows[] = array(
@@ -28,8 +28,8 @@ function theme_geoip_language_mapping_overview($languages) {
       $language,
       $languages[$language],
       l(
-        t('Delete'), 
-        'admin/config/regional/language/configure/geoip/delete/' . $country, 
+        t('Delete'),
+        'admin/config/regional/language/configure/geoip/delete/' . $country,
         array('query' => drupal_get_destination())
       ),
     );
@@ -60,7 +60,7 @@ function theme_geoip_language_mapping_overview($languages) {
 
 /**
  * FAPI callback for creating a new country-language mapping.
- * 
+ *
  * @return array
  */
 function geoip_language_form($form, &$form_state) {
@@ -73,7 +73,7 @@ function geoip_language_form($form, &$form_state) {
       $options[$key] = "$key - $value";
     }
   }
-  
+
   $form['new'] = array(
     '#type' => 'fieldset',
     '#title' => t('New mapping'),
@@ -95,7 +95,7 @@ function geoip_language_form($form, &$form_state) {
     '#type' => 'submit',
     '#value' => t('Add mapping'),
   );
-  
+
   $form['set3']['textfiles'] = array(
     '#type' => 'item',
     '#markup' => theme('geoip_language_mapping_overview', $languages),
@@ -106,12 +106,12 @@ function geoip_language_form($form, &$form_state) {
 
 /**
  * FAPI submit handler.
- * 
+ *
  * @return void
  */
 function geoip_language_form_submit($form, &$form_state) {
   geoip_language_mapping_create(
-    $form_state['values']['country'], 
+    $form_state['values']['country'],
     $form_state['values']['language']
   );
 
@@ -123,7 +123,7 @@ function geoip_language_form_submit($form, &$form_state) {
 
 /**
  * Create th confirm form for deleting a mapping item
- * 
+ *
  * @return array
  */
 function geoip_admin_delete_mapping(&$form_state, $country) {
@@ -144,15 +144,15 @@ function geoip_admin_delete_mapping(&$form_state, $country) {
 
 /**
  * Process a confirmed delete request of a mapping item
- * 
+ *
  * @return void
  */
 function geoip_admin_delete_mapping_submit($form, &$form_state) {
-  $coutryCode = $form_state['values']['country']['build_info']['args'][0];
-  geoip_language_mapping_delete($coutryCode);
+  $coutry_code = $form_state['values']['country']['build_info']['args'][0];
+  geoip_language_mapping_delete($coutry_code);
 
-  $countries = geoip_country_values();  
-  drupal_set_message(t('GeoIP mapping deleted for %country.', array('%country' => $countries[$coutryCode])));
+  $countries = geoip_country_values();
+  drupal_set_message(t('GeoIP mapping deleted for %country.', array('%country' => $countries[$coutry_code])));
 
   $form_state['redirect'] = 'admin/config/regional/language/configure/geoip';
 }

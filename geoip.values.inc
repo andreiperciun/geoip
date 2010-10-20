@@ -17,12 +17,12 @@ function _geoip_country_values() {
   $countries = country_get_list();
 
   // MaxMind specific shortcuts
-  $countries +=	array(
-  	'A1' => 'Anonymous Proxy',
-  	'A2' => 'Satellite Provider',
+  $countries += array(
+    'A1' => 'Anonymous Proxy',
+    'A2' => 'Satellite Provider',
     'AP' => 'Asia/Pacific Region',
-  	'EU' => 'Europe',
-  	'O1' => 'Other Country',
+    'EU' => 'Europe',
+    'O1' => 'Other Country',
   );
   return $countries;
 }

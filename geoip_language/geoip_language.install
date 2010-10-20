@@ -7,8 +7,8 @@
  */
 
 /**
- * Implementation of hook_schema().
- * 
+ * Implements of hook_schema().
+ *
  * @return array
  */
 function geoip_language_schema() {
@@ -35,8 +35,8 @@ function geoip_language_schema() {
 }
 
 /**
- * Implementation of hook_disable().
- * 
+ * Implements of hook_disable().
+ *
  * @return void
  */
 function geoip_language_disable() {
