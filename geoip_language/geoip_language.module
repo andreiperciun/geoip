@@ -8,18 +8,20 @@
 
 /**
  * Language negotiation option for GeoIP detection.
+ *
  * @var integer
  */
 define('GEOIP_LANGUAGE_NEGOTIATION_PATH', 8);
 
 /**
- * Key to recognize this language provider
+ * Key to recognize this language provider.
+ *
  * @var string
  */
 define('GEOIP_LANGUAGE_NEGOTIATION', 'geoip-language-negotiation');
 
 /**
- * Implements of hook_help().
+ * Implements hook_help().
  *
  * @return string
  */
@@ -32,7 +34,7 @@ function geoip_language_help($path, $arg) {
 }
 
 /**
- * Implements of hook_menu().
+ * Implements hook_menu().
  *
  * @return array
  */
@@ -60,10 +62,10 @@ function geoip_language_menu() {
 }
 
 /**
-* Implements hook_language_negotiation_info().
-*
-* @return array
-*/
+ * Implements hook_language_negotiation_info().
+ *
+ * @return array
+ */
 function geoip_language_language_negotiation_info() {
   return array(GEOIP_LANGUAGE_NEGOTIATION => array(
       'callbacks' => array(
@@ -82,12 +84,12 @@ function geoip_language_language_negotiation_info() {
 }
 
 /**
-* Identify language via URL prefix or domain excluding administrative paths.
-* Try to keep as light weight as possible
-*
-* @return string
-*   Language as ISO 639-1 Code
-*/
+ * Identify language via URL prefix or domain excluding administrative paths.
+ * Try to keep as light weight as possible
+ *
+ * @return string
+ *   Language as ISO 639-1 Code
+ */
 function language_negotiation_from_geoip($languages) {
   // Use the core URL language provider to get a valid language code.
   include_once DRUPAL_ROOT . '/includes/locale.inc';
@@ -99,14 +101,12 @@ function language_negotiation_from_geoip($languages) {
 }
 
 /**
- * Implements of custom_url_rewrite_outbound().
+ * Implements custom_url_rewrite_outbound().
  * language_url_rewrite() doesn't add the path prefix for the default language,
  * so we are doing it here.  This lessens the amount of redirection that
  * would occur because of a missing path prefix.
  *
- * @todo Function disabled - looks like this is not necessary anymore in D7
- *
- * @return void
+ * @TODO Function disabled - looks like this is not necessary anymore in D7
  */
 function _geoip_language_url_outbound_alter(&$path, &$options, $original_path) {
 //    global $language;
@@ -135,14 +135,9 @@ function _geoip_language_url_outbound_alter(&$path, &$options, $original_path) {
 }
 
 /**
- * Implements of hook_form_locale_languages_configure_form_alter().
- *
- * @return void
+ * Implements hook_form_locale_languages_configure_form_alter().
  */
-function geoip_language_form_locale_languages_configure_form_alter(
-  &$form,
-  $form_state
-) {
+function geoip_language_form_locale_languages_configure_form_alter(&$form, $form_state) {
   $form['language_negotiation']['#options'][GEOIP_LANGUAGE_NEGOTIATION_PATH] = t('Path prefix with GeoIP detection fallback.');
 }
 
@@ -203,7 +198,7 @@ function geoip_language_mapping_delete($country) {
  *  Associative array key=countrycode, value= Language as ISO 639-1 Code
  */
 function geoip_language_mappings($reset = FALSE) {
-  static $mapping = NULL;
+  $mapping = drupal_static(__FUNCTION__, NULL);
 
   if ($reset || !isset($mapping)) {
     $data = cache_get(__METHOD__);
@@ -261,7 +256,7 @@ function geoip_language_detect_language($reset = FALSE) {
 }
 
 /**
- * Implements of hook_flush_caches().
+ * Implements hook_flush_caches().
  *
  * @return array
  *  Return an empty array - we do the flush ourselfes
@@ -273,7 +268,7 @@ function geoip_language_flush_caches() {
 }
 
 /**
- * Implements of hook_theme().
+ * Implements hook_theme().
  *
  * @return array()
  */

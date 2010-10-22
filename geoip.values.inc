@@ -11,6 +11,8 @@
  *
  * List consists of iso3166 codes and the maxmind special codes
  * defined here: http://www.maxmind.com/app/iso3166
+ *
+ * @return array
  */
 function _geoip_country_values() {
   include_once DRUPAL_ROOT . '/includes/locale.inc';

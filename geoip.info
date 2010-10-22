@@ -10,6 +10,8 @@ files[] = geoip.values.inc
 files[] = lib/geoip.inc
 files[] = lib/geoipcity.inc
 files[] = lib/geoipregionvars.php
+files[] = geoip.tokens.inc
+files[] = geoip.rules.inc
 
 ; Information added by drupal.org packaging script on 2010-07-11
 version = "7.x-1.x-dev"

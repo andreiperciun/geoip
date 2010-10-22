@@ -7,9 +7,7 @@
  */
 
 /**
- * Some sort of caching :)
- * 
- * @return void|false
+ * Some sort of caching.
  */
 function page_cache_fastpath() {
   $file = variable_get('file_directory_path', conf_path() . '/files') . '/geoip_language.txt';

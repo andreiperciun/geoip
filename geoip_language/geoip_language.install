@@ -7,7 +7,7 @@
  */
 
 /**
- * Implements of hook_schema().
+ * Implements hook_schema().
  *
  * @return array
  */
@@ -35,9 +35,7 @@ function geoip_language_schema() {
 }
 
 /**
- * Implements of hook_disable().
- *
- * @return void
+ * Implements hook_disable().
  */
 function geoip_language_disable() {
   $language_negotiation = variable_get('language_negotiation_language', array());

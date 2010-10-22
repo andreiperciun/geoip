@@ -45,4 +45,3 @@ function geoip_data_file_validate($form_element) {
 
   return $form_element;
 }
-

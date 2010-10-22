@@ -106,8 +106,6 @@ function geoip_language_form($form, &$form_state) {
 
 /**
  * FAPI submit handler.
- *
- * @return void
  */
 function geoip_language_form_submit($form, &$form_state) {
   geoip_language_mapping_create(
@@ -123,8 +121,6 @@ function geoip_language_form_submit($form, &$form_state) {
 
 /**
  * Create th confirm form for deleting a mapping item
- *
- * @return array
  */
 function geoip_admin_delete_mapping(&$form_state, $country) {
   $form['country'] = array(
@@ -144,8 +140,6 @@ function geoip_admin_delete_mapping(&$form_state, $country) {
 
 /**
  * Process a confirmed delete request of a mapping item
- *
- * @return void
  */
 function geoip_admin_delete_mapping_submit($form, &$form_state) {
   $coutry_code = $form_state['values']['country']['build_info']['args'][0];
