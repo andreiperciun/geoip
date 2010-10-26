@@ -1,4 +1,4 @@
-// $Id: README.txt,v 1.3 2010/05/05 15:20:23 drewish Exp $
+// $Id$
 
 GeoIP API Library
 --------------------

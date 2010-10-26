@@ -1,5 +1,5 @@
 <?php
-// $Id: geoip_language.fastpath.inc,v 1.1 2009/07/13 01:37:15 rz Exp $
+// $Id$
 
 /**
  * @file

@@ -1,4 +1,4 @@
-// $Id: INSTALL.txt,v 1.4 2010/05/05 15:20:23 drewish Exp $
+// $Id$
 
 Database Files
 --------------------

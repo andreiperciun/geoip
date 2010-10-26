@@ -1,5 +1,5 @@
 <?php
-// $Id: geoip.admin.inc,v 1.3 2010/05/20 21:05:28 drewish Exp $
+// $Id$
 
 /**
  * @file

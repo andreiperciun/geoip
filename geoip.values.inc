@@ -1,5 +1,5 @@
 <?php
-// $Id: geoip.values.inc,v 1.1 2009/09/10 20:48:31 rz Exp $
+// $Id$
 
 /**
  * @file
