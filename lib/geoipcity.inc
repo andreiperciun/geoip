@@ -67,9 +67,9 @@ class geoipdnsrecord {
 
 function getrecordwithdnsservice($str){
   $record = new geoipdnsrecord;
-  $keyvalue = split(";",$str);
+  $keyvalue = explode(";",$str);
   foreach ($keyvalue as $keyvalue2){
-    list($key,$value) = split("=",$keyvalue2);
+    list($key,$value) = explode("=",$keyvalue2);
     if ($key == "co"){
       $record->country_code = $value;
     }
@@ -120,14 +120,14 @@ function _get_record($gi,$ipnum){
   if ($seek_country == $gi->databaseSegments) {
     return NULL;
   }
-  
+
   // workaround php's broken substr, strpos, etc handling with
   // mbstring.func_overload and mbstring.internal_encoding
   $enc = mb_internal_encoding();
-  mb_internal_encoding('ISO-8859-1'); 
+  mb_internal_encoding('ISO-8859-1');
 
   $record_pointer = $seek_country + (2 * $gi->record_length - 1) * $gi->databaseSegments;
-  
+
   if ($gi->flags & GEOIP_MEMORY_CACHE) {
     $record_buf = substr($gi->memory_buffer,$record_pointer,FULL_RECORD_LENGTH);
   } elseif ($gi->flags & GEOIP_SHARED_MEMORY){
