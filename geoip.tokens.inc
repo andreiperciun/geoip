@@ -19,7 +19,7 @@ function geoip_token_info() {
   );
 
   return array(
-    'tokens' => array('site' => $tokens),
+    'tokens' => array('user' => $tokens),
   );
 }
 
@@ -28,7 +28,7 @@ function geoip_token_info() {
  */
 function geoip_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
-  if ($type == 'site') {
+  if ($type == 'user') {
     if (isset($tokens['geoip-country-code'])) {
       $replacements[$tokens['geoip-country-code']] = geoip_country_code();
     }
