@@ -29,15 +29,18 @@ function geoip_token_info() {
 function geoip_tokens($type, $tokens, array $data = array(), array $options = array()) {
   $replacements = array();
   if ($type == 'user') {
-    if (isset($tokens['geoip-country-code'])) {
-      $replacements[$tokens['geoip-country-code']] = geoip_country_code();
-    }
-
-    if (isset($tokens['geoip-country-name'])) {
-      $country_values = geoip_country_values();
-      $country_code = geoip_country_code();
-      $country_name = (isset($country_values[$country_code])) ? $country_values[$country_code] : t('Unknown');
-      $replacements[$tokens['geoip-country-name']] = $country_name;
+    foreach($tokens as $token => $placeholder) {
+      switch($token) {
+        case 'geoip-country-code':
+          $replacements[$token] = geoip_country_code();
+          break;
+        case 'geoip-country-name':
+          $country_values = geoip_country_values();
+          $country_code = geoip_country_code();
+          $country_name = (isset($country_values[$country_code])) ? $country_values[$country_code] : t('Unknown');
+          $replacements[$token] = $country_name;
+          break;
+      }
     }
   }
   return $replacements;
