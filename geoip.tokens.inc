@@ -32,13 +32,13 @@ function geoip_tokens($type, $tokens, array $data = array(), array $options = ar
     foreach($tokens as $token => $placeholder) {
       switch($token) {
         case 'geoip-country-code':
-          $replacements[$token] = geoip_country_code();
+          $replacements[$placeholder] = geoip_country_code();
           break;
         case 'geoip-country-name':
           $country_values = geoip_country_values();
           $country_code = geoip_country_code();
           $country_name = (isset($country_values[$country_code])) ? $country_values[$country_code] : t('Unknown');
-          $replacements[$token] = $country_name;
+          $replacements[$placeholder] = $country_name;
           break;
       }
     }
