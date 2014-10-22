@@ -1,20 +1,11 @@
-; $Id$
 name = GeoIP
-description = API for using the MaxMind GeoLite Country database
+description = API for using the Maxmind Geo databases.
 core = 7.x
+configure = admin/config/system/geoip
 
-files[] = geoip.admin.inc
-files[] = geoip.install
-files[] = geoip.module
-files[] = geoip.values.inc
-files[] = lib/geoip.inc
-files[] = lib/geoipcity.inc
-files[] = lib/geoipregionvars.php
-files[] = geoip.tokens.inc
-files[] = geoip.rules.inc
+dependencies[] = libraries
 
-; Information added by drupal.org packaging script on 2010-07-11
-version = "7.x-1.x-dev"
-core = "7.x"
-project = "geoip"
-datestamp = "1278834382"
+files[] = tests/geoip.test
+files[] = src/GeoIpHandlerInterface.php
+files[] = src/GeoIpHandlerV1.php
+files[] = src/GeoIpHandlerV2.php

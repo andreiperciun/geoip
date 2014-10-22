@@ -1,6 +1,4 @@
 <?php
-// $Id$
-
 /**
  * @file
  * API for using the MaxMind GeoLite Country database.
@@ -8,8 +6,6 @@
 
 /**
  * Implements hook_menu().
- *
- * @return array
  */
 function geoip_menu() {
   $items['admin/config/system/geoip'] = array(
@@ -20,56 +16,25 @@ function geoip_menu() {
     'access arguments' => array('administer site configuration'),
     'file' => 'geoip.admin.inc',
   );
-
   return $items;
 }
 
 /**
- * Implements hook_requirements().
+ * Helper function to get the current ip address.
  *
- * @param string $phase
- * @return array
- */
-function geoip_requirements($phase) {
-  $requirements = array();
-  // Ensure translations don't break at install time
-  $t = get_t();
-
-  // Test for a valid GeoIP database
-  $requirements['geoip_database'] = array(
-    'title' => $t('GeoIP Database'),
-  );
-
-  $file = geoip_data_file();
-
-  if (!$file || !file_exists($file)) {
-    $requirements['geoip_database']['value'] = l('Missing', 'admin/settings/geoip');
-    $requirements['geoip_database']['description'] = $t('The GeoIP database file is missing or not configured. Download the latest file at <a href="@url">MaxMind.com</a>.', array('@url' => 'http://www.maxmind.com/download/geoip/database/GeoIP.dat.gz'));
-    $requirements['geoip_database']['severity'] = ($phase == 'runtime') ? REQUIREMENT_WARNING : REQUIREMENT_ERROR;
-  }
-  else {
-    $mtime = filemtime($file);
-    if ($mtime < strtotime('1 months ago')) {
-      $requirements['geoip_database']['value'] = $t('Out of date');
-      $requirements['geoip_database']['description'] = $t('The GeoIP database file is more than a month old. Download the latest file at <a href="@url">MaxMind.com</a>.', array('@url' => 'http://www.maxmind.com/download/geoip/database/GeoIP.dat.gz'));
-      $requirements['geoip_database']['severity'] = REQUIREMENT_WARNING;
-    }
-    else {
-      $requirements['geoip_database']['value'] = $t('Installed');
-    }
-  }
-
-  return $requirements;
-}
-
-/**
- * Helper function to get the current ip address
+ * Uses ip_address() internally to resolve HTTP_X_FORWARDED_FOR
+ * headers.
+ * If debugging is enabled you can define a ip using the GET parameter
+ * geoip_debug.
+ *
+ * @see ip_address()
  *
  * @return string
+ *   The ip address.
  */
 function geoip_ip_address() {
   if (variable_get('geoip_debug', FALSE) && isset($_GET['geoip_debug'])) {
-    $ip = $_GET['geoip_debug'];
+    $ip = check_plain($_GET['geoip_debug']);
     drupal_set_message(t('GeoIP debug mode. Using IP: %ip', array('%ip' => $ip)));
   }
   else {
@@ -79,69 +44,134 @@ function geoip_ip_address() {
 }
 
 /**
- * Singleton wrapper around geoip_open().
+ * Returns the version of the api to use.
+ *
+ * Defaults to 2.
+ *
+ * @return int
+ *   The version number of the api to use. Defaults to 2.
+ */
+function geoip_get_api_version() {
+  // Check if it is configured.
+  if ($version = variable_get('geoip_db_version', FALSE)) {
+    return $version;
+  }
+  // Try our luck with the db file.
+  if ($db_file = variable_get('geoip_data_file', NULL)) {
+    $extension = pathinfo($db_file, PATHINFO_EXTENSION);
+    if ($extension == 'dat') {
+      return 1;
+    }
+  }
+  // Default to 2.
+  return 2;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function geoip_libraries_info() {
+  $libraries['geoip-api-php'] = array(
+    'name' => 'GeoIp V1 - Legacy',
+    'vendor url' => 'http://dev.maxmind.com/geoip/legacy/downloadable/',
+    'download url' => 'https://github.com/maxmind/geoip-api-php',
+    'path' => 'src',
+    'version arguments' => array(
+      'file' => 'ChangeLog.md',
+      'pattern' => '/^\#\#\s+([0-9a-zA-Z\.-]+)/',
+      'lines' => 5,
+      'cols' => 20,
+    ),
+    'files' => array(
+      'php' => array(
+        // We just load this because it will include the other required files.
+        'geoipcity.inc',
+      ),
+    ),
+  );
+
+  $libraries['GeoIP2-php'] = array(
+    'name' => 'GeoIP2',
+    'vendor url' => 'https://github.com/maxmind/GeoIP2-php',
+    'download url' => 'https://github.com/maxmind/GeoIP2-php',
+    'version arguments' => array(
+      'file' => 'vendor/geoip2/geoip2/CHANGELOG.md',
+      'pattern' => '/^([0-9a-zA-Z\.-]+)\s\(/',
+      'lines' => 5,
+      'cols' => 20,
+    ),
+    'files' => array(
+      'php' => array(
+        // We just load this because it will include the other required files.
+        'vendor/autoload.php',
+      ),
+    ),
+  );
+
+  $libraries['GeoIP2-phar'] = array(
+    'name' => 'GeoIP2',
+    'vendor url' => 'https://github.com/maxmind/GeoIP2-php',
+    'download url' => 'https://github.com/maxmind/GeoIP2-php/releases',
+    // We can't detect the version in this library package.
+    'version' => 1,
+    'files' => array(
+      'php' => array(
+        'geoip2.phar',
+      ),
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Returns the instance to handle the configured file.
+ *
+ * @return \Drupal\geoip\GeoIpHandlerInterface
+ *   The handler to use.
  */
 function geoip_instance() {
-  $data_file = geoip_data_file();
-  if (!$data_file || !file_exists($data_file)) {
+  $instances = &drupal_static(__FUNCTION__, array());
+
+  // Check if a proper data file is given.
+  if (!($data_file = variable_get('geoip_data_file')) || !file_exists($data_file)) {
     return FALSE;
   }
 
-  // geoip.inc is common to both database types
-  _geoip_load_lib();
-  $instance = geoip_open($data_file, GEOIP_STANDARD);
+  $cid = $data_file;
+  if (!isset($instances[$cid])) {
 
-  // conditionally load the geoipcity include file
-  if ($instance->databaseType == GEOIP_CITY_EDITION_REV1) {
-    _geoip_load_lib('geoipcity.inc');
+    try {
+      // As this isn't D8 we can't rely on a PSR-4 loader and thus we load the
+      // files on our own.
+      require_once dirname(__FILE__) . '/src/GeoIpHandlerInterface.php';
+      switch (geoip_get_api_version()) {
+        case 1:
+          require_once dirname(__FILE__) . '/src/GeoIpHandlerV1.php';
+          $instances[$cid] = new \Drupal\geoip\GeoIpHandlerV1();
+          break;
+
+        case 2:
+        default:
+          require_once dirname(__FILE__) . '/src/GeoIpHandlerV2.php';
+          $instances[$cid] = new \Drupal\geoip\GeoIpHandlerV2();
+      }
+
+      // Configure the instance.
+      $instances[$cid]->setDbFile($data_file);
+    }
+    catch (Exception $e) {
+      return FALSE;
+    }
   }
-
-  return $instance;
+  return $instances[$cid];
 }
 
 /**
- * Get the file path of the geoip module.  This is a wrapper around
- * drupal_get_path() that falls back to simply using the directory of the
- * module file if too early in the bootstrap.
- *
- * @return string
+ * Implements hook_ctools_plugin_directory().
  */
-function geoip_get_path() {
-  if (function_exists('drupal_get_path')) {
-    // Let drupal set the path
-    $path = drupal_get_path('module', 'geoip');
-  }
-  else {
-    // Fallback to trying to find the path based on PHP's knowledge of our
-    // current path.
-    $path = dirname(__FILE__);
-  }
-  return $path;
-}
-
-/**
- * Return the path of the GeoIP.dat data file.
- *
- * @return string
- */
-function geoip_data_file() {
-  return variable_get('geoip_data_file', 'sites/all/libraries/geoip/GeoIP.dat');
-}
-
-/**
- * Include the external geoip libraries.
- *
- * @param $file
- *   The file to be included.  Must reside in the lib sub-directory.
- */
-function _geoip_load_lib($file = 'geoip.inc') {
-  static $loaded = array();
-
-  // If we've haven't tried to include geoip.inc do so. Otherwise, just fall
-  // through.
-  if (!isset($loaded[$file])) {
-    $loaded[$file] = TRUE;
-    include_once geoip_get_path() . '/lib/' . $file;
+function geoip_ctools_ctools_plugin_directory($module, $plugin) {
+  if ($module == 'ctools' && !empty($plugin)) {
+    return "plugins/$plugin";
   }
 }
 
@@ -152,84 +182,160 @@ function _geoip_load_lib($file = 'geoip.inc') {
  */
 
 /**
- * API function to return the country code for a given IP. Defaults to using the
- * current user's IP if not specified. This function works with both the country
- * and city level databases.
+ * Returns the country code for a given IP.
  *
- * @return string
- *  Country Code
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   Country Code or FALSE on error.
+ */
+function geoip_raw_record($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
+  if ($gi = geoip_instance()) {
+    return $gi->rawRecord($ip);
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the continent code for a given IP.
+ *
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   Country code or FALSE on error. Code is always upper case.
+ */
+function geoip_continent_code($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
+  if ($gi = geoip_instance()) {
+    return $gi->continentCode($ip);
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the continent name for a given IP.
+ *
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   Continent name or FALSE on error.
+ */
+function geoip_continent_name($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
+  if ($gi = geoip_instance()) {
+    return $gi->continentName($ip);
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the ISO 3166-2 country code for a given IP.
+ *
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   Country code or FALSE on error. Code is always upper case.
  */
 function geoip_country_code($ip = NULL) {
   $ip = $ip ? $ip : geoip_ip_address();
-  $gi = geoip_instance();
-
-  if (!$gi) {
-    return FALSE;
+  if ($gi = geoip_instance()) {
+    return $gi->countryCode($ip);
   }
-
-  $cc = geoip_country_code_by_addr($gi, $ip);
-
-  geoip_close($gi);
-
-  return $cc;
+  return FALSE;
 }
 
 /**
- * API function to return the city data for a given IP. Defaults to using the
- * current user's IP if not specified. This function only works with the city
- * level database and will return false in all other cases.
+ * Returns the country name for a given IP.
+ *
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   Country name or FALSE on error.
  */
-function geoip_city($ip = NULL) {
+function geoip_country_name($ip = NULL) {
   $ip = $ip ? $ip : geoip_ip_address();
-  $gi = geoip_instance();
-
-  if (!$gi) {
-    return FALSE;
+  if ($gi = geoip_instance()) {
+    return $gi->countryName($ip);
   }
-  elseif ($gi->databaseType != GEOIP_CITY_EDITION_REV1) {
-    // If not using a city database, there is nothing to do.
-    return FALSE;
-  }
-
-
-  $record = geoip_record_by_addr($gi, $ip);
-
-  geoip_close($gi);
-
-  return $record;
+  return FALSE;
 }
 
 /**
- * API function to retrieve the region name, given a country code and region
- * code. This function relies on the geoipregionvars.php file, which is just a
- * huge array.
+ * Returns the region code for a given IP.
  *
- * @return string
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   The region code or FALSE on error. Code is always upper case.
  */
-function geoip_region_name($country_code, $region_code) {
-  static $GEOIP_REGION_NAME;
-  if (!isset($GEOIP_REGION_NAME)) {
-    include drupal_get_path('module', 'geoip') . '/lib/geoipregionvars.php';
+function geoip_region_code($ip = NULL) {
+  if ($gi = geoip_instance()) {
+    return $gi->regionCode($ip);
   }
-
-  return $GEOIP_REGION_NAME[$country_code][$region_code];
+  return FALSE;
 }
 
 /**
- * Returns a list of country codes.
+ * Returns the region name, given a country code and region code.
  *
- * Returns codes as specified by http://www.maxmind.com/app/iso3166
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   The region name or FALSE on error.
+ */
+function geoip_region_name($ip = NULL) {
+  if ($gi = geoip_instance()) {
+    return $gi->regionName($ip);
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the city data for a given IP.
+ *
+ * Defaults to using the current user's IP if not specified.
+ * This function only works with the city level database and will return FALSE
+ * in all other cases.
+ *
+ * @param string $ip
+ *   The ip to resolve, defaults to the current users ip.
+ *
+ * @return string|FALSE
+ *   The city name or FALSE on error.
+ */
+function geoip_city_name($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
+  if ($gi = geoip_instance()) {
+    return $gi->cityName($ip);
+  }
+  return FALSE;
+}
+
+/**
+ * Returns the list with the ISO continents keyed by the continent code.
  *
  * @return array
- *  Associative array with the country code as key, and the country name as value.
+ *   Associative array key is the continent code, value is the continent name.
  */
-function geoip_country_values() {
-  static $countries = NULL;
-  if (!isset($countries)) {
-    module_load_include('inc', 'geoip', 'geoip.values');
-    $countries = _geoip_country_values();
-  }
-  return $countries;
+function geoip_continents_list() {
+  $continents = array(
+    'AN' => t('Antarctica'),
+    'AF' => t('Africa'),
+    'AS' => t('Asia'),
+    'EU' => t('Europe'),
+    'NA' => t('North America'),
+    'OC' => t('Australia (Oceania)'),
+    'SA' => t('South America'),
+  );
+  return $continents;
 }
 
 /**
