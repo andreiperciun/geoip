@@ -54,7 +54,7 @@ function geoip_admin_settings() {
   }
   $form['geoip_example'] = array(
     '#type' => 'item',
-    '#title' => t('Example with !ip', array('!ip' => $ip)),
+    '#title' => t('Example with !ip:', array('!ip' => $ip)),
     '#markup' => t('For this example the GET parameter <kbd>geoip_debug</kbd> is always evaluated - regardless of debug mode!') . theme('item_list', array(
       'items' => array(
         t('Continent code: %geoip_continent_code', array('%geoip_continent_code' => geoip_continent_code($ip))),
@@ -83,7 +83,11 @@ function geoip_data_file_validate($form_element) {
   else {
     $mtime = filemtime($file);
     if ($mtime < strtotime('1 months ago')) {
-      drupal_set_message(t('The GeoIP database file is more than a month old. Download the latest file at <a href="@url" target="_blank">Maxmind.com</a>.', array('@url' => 'http://dev.maxmind.com/geoip/geoip2/geolite2/')), 'warning');
+      $database_link = 'http://dev.maxmind.com/geoip/geoip2/geolite2/#Downloads';
+      if (variable_get('geoip_db_version', 2) == 1) {
+        $database_link = 'http://dev.maxmind.com/geoip/legacy/downloadable/';
+      }
+      drupal_set_message(t('The GeoIP database file is more than a month old. Download the latest file at <a href="@url" target="_blank">Maxmind.com</a>.', array('@url' => $database_link)), 'warning');
     }
   }
 
