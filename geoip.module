@@ -176,6 +176,20 @@ function geoip_ctools_ctools_plugin_directory($module, $plugin) {
 }
 
 /**
+ * Implements hook_views_query_substitutions().
+ */
+function geoip_views_query_substitutions($view) {
+  return array(
+    '***GEOIP_CONTINENT_CODE***' => geoip_continent_code(),
+    '***GEOIP_CONTINENT_NAME***' => geoip_continent_name(),
+    '***GEOIP_COUNTRY_CODE***' => geoip_country_code(),
+    '***GEOIP_COUNTRY_NAME***' => geoip_country_name(),
+    '***GEOIP_REGION_CODE***' => geoip_region_code(),
+    '***GEOIP_REGION_NAME***' => geoip_region_name(),
+  );
+}
+
+/**
  * @defgroup geoip GeoIP Public API
  * @{
  * GeoIP Public API functions
