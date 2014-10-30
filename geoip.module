@@ -35,7 +35,7 @@ function geoip_menu() {
 function geoip_ip_address() {
   if (variable_get('geoip_debug', FALSE) && isset($_GET['geoip_debug'])) {
     $ip = check_plain($_GET['geoip_debug']);
-    drupal_set_message(t('GeoIP debug mode. Using IP: %ip', array('%ip' => $ip)));
+    drupal_set_message(t('GeoIP debug mode. Using IP: %ip', array('%ip' => $ip)), 'status', FALSE);
   }
   else {
     $ip = ip_address();
@@ -290,6 +290,7 @@ function geoip_country_name($ip = NULL) {
  *   The region code or FALSE on error. Code is always upper case.
  */
 function geoip_region_code($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
   if ($gi = geoip_instance()) {
     return $gi->regionCode($ip);
   }
@@ -306,6 +307,7 @@ function geoip_region_code($ip = NULL) {
  *   The region name or FALSE on error.
  */
 function geoip_region_name($ip = NULL) {
+  $ip = $ip ? $ip : geoip_ip_address();
   if ($gi = geoip_instance()) {
     return $gi->regionName($ip);
   }
