@@ -151,8 +151,9 @@ class GeoIpHandlerV2 implements GeoIpHandlerInterface {
   public function regionCode($ip = NULL) {
     try {
       $subdivisions = $this->record($ip)->subdivisions;
-      $subdivision = end($subdivisions);
-      return strtoupper($subdivision->isoCode);
+      if ($subdivision = end($subdivisions)) {
+        return strtoupper($subdivision->isoCode);
+      }
     }
     catch (\Exception $e) {
       return FALSE;
@@ -165,8 +166,9 @@ class GeoIpHandlerV2 implements GeoIpHandlerInterface {
   public function regionName($ip = NULL) {
     try {
       $subdivisions = $this->record($ip)->subdivisions;
-      $subdivision = end($subdivisions);
-      return $subdivision->name;
+      if ($subdivision = end($subdivisions)) {
+        return $subdivision->name;
+      }
     }
     catch (\Exception $e) {
       return FALSE;
