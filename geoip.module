@@ -179,14 +179,20 @@ function geoip_ctools_ctools_plugin_directory($module, $plugin) {
  * Implements hook_views_query_substitutions().
  */
 function geoip_views_query_substitutions($view) {
-  return array(
-    '***GEOIP_CONTINENT_CODE***' => geoip_continent_code(),
-    '***GEOIP_CONTINENT_NAME***' => geoip_continent_name(),
-    '***GEOIP_COUNTRY_CODE***' => geoip_country_code(),
-    '***GEOIP_COUNTRY_NAME***' => geoip_country_name(),
-    '***GEOIP_REGION_CODE***' => geoip_region_code(),
-    '***GEOIP_REGION_NAME***' => geoip_region_name(),
-  );
+  $cache = &drupal_static(__FUNCTION__, array());
+  // Since evaluating all the details can take some time we cache this per
+  // request, so multiple views won't slow down the execution.
+  if (empty($cache)) {
+    $cache = array(
+      '***GEOIP_CONTINENT_CODE***' => geoip_continent_code(),
+      '***GEOIP_CONTINENT_NAME***' => geoip_continent_name(),
+      '***GEOIP_COUNTRY_CODE***' => geoip_country_code(),
+      '***GEOIP_COUNTRY_NAME***' => geoip_country_name(),
+      '***GEOIP_REGION_CODE***' => geoip_region_code(),
+      '***GEOIP_REGION_NAME***' => geoip_region_name(),
+    );
+  }
+  return $cache;
 }
 
 /**
