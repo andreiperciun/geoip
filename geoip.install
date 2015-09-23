@@ -18,6 +18,7 @@ function geoip_requirements($phase) {
   );
 
   // Check if the required libraries are available.
+  module_load_include('module', 'libraries');
   $library_v1 = libraries_detect('geoip-api-php');
   $library_v2 = libraries_detect('GeoIP2-php');
   $library_v2_phar = libraries_detect('GeoIP2-phar');
