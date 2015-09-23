@@ -49,7 +49,7 @@ function geoip_requirements($phase) {
   }
 
   if (!($file = variable_get('geoip_data_file')) || !file_exists($file)) {
-    $requirements['geoip_database']['value'] = l($t('Missing'), 'admin/settings/geoip');
+    $requirements['geoip_database']['value'] = $t('Missing');
     $requirements['geoip_database']['description'] = $t('The GeoIP database file is missing or not configured. Download the latest file at <a href="@url">Maxmind.com</a>.', array('@url' => $database_link));
     $requirements['geoip_database']['severity'] = ($phase == 'runtime') ? REQUIREMENT_ERROR : REQUIREMENT_ERROR;
   }
