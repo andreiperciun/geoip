@@ -1,13 +1,11 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: mglaman
- * Date: 12/29/15
- * Time: 4:21 PM
+ * @file
+ * Contains \Drupal\geoip\Annotation\GeoLocator.
  */
 
 namespace Drupal\geoip\Annotation;
-
 
 use Drupal\Component\Annotation\Plugin;
 
@@ -35,4 +33,5 @@ class GeoLocator extends Plugin {
    * @ingroup plugin_translatable
    */
   public $description;
+
 }

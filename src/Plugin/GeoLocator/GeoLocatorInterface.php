@@ -46,4 +46,5 @@ interface GeoLocatorInterface {
    *   The geolocated country code, or NULL if not found.
    */
   public function geolocate($ip_address);
+
 }

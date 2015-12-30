@@ -6,6 +6,7 @@
  */
 
 namespace Drupal\geoip\Plugin\GeoLocator;
+
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
@@ -102,10 +103,22 @@ class Local extends GeoLocatorBase {
     return $uri;
   }
 
+  /**
+   * Get the current file scheme.
+   *
+   * @return string
+   *   The file scheme.
+   */
   public function getScheme() {
     return $this->scheme;
   }
 
+  /**
+   * Set the current file scheme.
+   *
+   * @param string $scheme
+   *   A valid file scheme
+   */
   public function setScheme($scheme) {
     /** @var \Drupal\Core\File\FileSystem $file_system */
     $file_system = \Drupal::service('file_system');

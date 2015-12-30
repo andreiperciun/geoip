@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: mglaman
- * Date: 12/29/15
- * Time: 4:50 PM
+ * @file
+ * Contains \Drupal\geoip\GeoLocation.
  */
 
 namespace Drupal\geoip;
@@ -15,6 +14,9 @@ use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\UseCacheBackendTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 
+/**
+ * Service to interact with the default geolocator plugin for geolocation.
+ */
 class GeoLocation {
 
   use UseCacheBackendTrait;

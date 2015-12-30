@@ -4,4 +4,4 @@ type: module
 core: 8.x
 dependencies:
   - address
-#configure: admin/config/system/geoip
+configure: geoip.configure

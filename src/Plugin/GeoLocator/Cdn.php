@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: mglaman
- * Date: 12/29/15
- * Time: 4:19 PM
+ * @file
+ * Contains \Drupal\geoip\Plugin\GeoLocator\Cdn.
  */
 
 namespace Drupal\geoip\Plugin\GeoLocator;
@@ -49,9 +48,7 @@ class Cdn extends GeoLocatorBase {
    *   The country code specified in the header.
    */
   protected function checkCloudflare() {
-    if (!empty($_SERVER['HTTP_CF_IPCOUNTRY'])) {
-      return $_SERVER['HTTP_CF_IPCOUNTRY'];
-    }
+    return (!empty($_SERVER['HTTP_CF_IPCOUNTRY'])) ? $_SERVER['HTTP_CF_IPCOUNTRY'] : NULL;
   }
 
   /**
@@ -61,9 +58,7 @@ class Cdn extends GeoLocatorBase {
    *   The country code specified in the header.
    */
   protected function checkCloudFront() {
-    if (!empty($_SERVER['HTTP_CLOUDFRONT_VIEWER_COUNTRY'])) {
-      return $_SERVER['HTTP_CLOUDFRONT_VIEWER_COUNTRY'];
-    }
+    return (!empty($_SERVER['HTTP_CLOUDFRONT_VIEWER_COUNTRY'])) ? $_SERVER['HTTP_CLOUDFRONT_VIEWER_COUNTRY'] : NULL;
   }
 
   /**

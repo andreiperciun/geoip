@@ -2,12 +2,11 @@
 
 /**
  * @file
- * Contains \Drupal\geoip\GeoLocatorsManager
+ * Contains \Drupal\geoip\GeoLocatorsManager.
  */
 
 namespace Drupal\geoip;
 
-use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;

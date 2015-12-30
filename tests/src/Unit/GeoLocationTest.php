@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * @file
+ * Contains \Drupal\Tests\geoip\Unit\GeoLocationTest.
+ */
+
 namespace Drupal\Tests\geoip\Unit;
 
 use Drupal\geoip\GeoLocation;
@@ -82,8 +87,8 @@ class GeoLocationTest extends UnitTestCase {
 
     $geolocators_manager->createInstance('local')->willReturn($locator->reveal());
 
-    $country_repository->get('US')->willReturn($this->prophesize(CountryRepositoryInterface::class)->reveal());
-    $country_repository->get('CA')->willReturn($this->prophesize(CountryRepositoryInterface::class)->reveal());
+    $country_repository->get('US')->willReturn($this->prophesize(CountryInterface::class)->reveal());
+    $country_repository->get('CA')->willReturn($this->prophesize(CountryInterface::class)->reveal());
 
     $config_factory->get('geoip.geolocation')->willReturn([
       'plugin_id' => 'local',
@@ -93,7 +98,8 @@ class GeoLocationTest extends UnitTestCase {
     $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal(), $cache_backend->reveal());
 
     $this->assertNull($geolocation->geolocate('127.0.0.1'));
-    $this->assertTrue($geolocation->geolocate('2605:a000:140d:c18f:5995:dfe1:7914:4b4f') instanceof CountryRepositoryInterface);
-    $this->assertTrue($geolocation->geolocate('23.86.161.12') instanceof CountryRepositoryInterface);
+    $this->assertTrue($geolocation->geolocate('2605:a000:140d:c18f:5995:dfe1:7914:4b4f') instanceof CountryInterface);
+    $this->assertTrue($geolocation->geolocate('23.86.161.12') instanceof CountryInterface);
   }
+
 }

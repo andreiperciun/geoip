@@ -1,9 +1,8 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: mglaman
- * Date: 12/29/15
- * Time: 9:50 PM
+ * @file
+ * Contains \Drupal\Tests\geoip\Unit\CdnGeoLocatorTest.
  */
 
 namespace Drupal\Tests\geoip\Unit;
@@ -22,6 +21,8 @@ use Drupal\Tests\UnitTestCase;
 class CdnGeoLocatorTest extends UnitTestCase {
 
   /**
+   * Test the geolocate method for Cdn plugin.
+   *
    * @covers ::geolocate
    * @backupGlobals disabled
    */
@@ -48,4 +49,5 @@ class CdnGeoLocatorTest extends UnitTestCase {
     // @todo this needs to be updated when custom header implemented.
     $this->assertEquals(NULL, $locator->geolocate('127.0.0.1'));
   }
+
 }
