@@ -7,8 +7,6 @@
 
 namespace Drupal\geoip\Plugin\GeoLocator;
 
-use Drupal\Component\Plugin\PluginManagerInterface;
-
 /**
  * Interface GeoLocatorInterface.
  */
@@ -39,21 +37,13 @@ interface GeoLocatorInterface {
   public function getDescription();
 
   /**
-   * Get the plugin's weight.
-   *
-   * @return int
-   *   The weight.
-   */
-  public function getWeight();
-
-  /**
    * Performs geolocation on an address.
    *
    * @param string $ip_address
    *   The IP address to geolocate.
    *
-   * @return array
-   *   Array of geolocation information.
+   * @return string|NULL
+   *   The geolocated country code, or NULL if not found.
    */
   public function geolocate($ip_address);
 }

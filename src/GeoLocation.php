@@ -8,48 +8,81 @@
 
 namespace Drupal\geoip;
 
+use CommerceGuys\Intl\Country\CountryRepositoryInterface;
+use Drupal\Component\Plugin\PluginManagerInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Cache\UseCacheBackendTrait;
-use Symfony\Component\DependencyInjection\ContainerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 
 class GeoLocation {
 
   use UseCacheBackendTrait;
 
   /**
-   * The service container.
-   *
-   * @var \Symfony\Component\DependencyInjection\ContainerInterface
-   */
-  protected $container;
-
-  /**
    * Plugin manager for GeoLocator plugins.
    *
-   * @var \Drupal\geoip\GeoLocatorsManagerInterface
+   * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
-  protected $geoLocatorsManager;
+  protected $geoLocatorManager;
+
+  /**
+   * Country repository.
+   *
+   * @var \CommerceGuys\Intl\Country\CountryRepositoryInterface
+   */
+  protected $countryRepository;
+
+  /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
 
   protected $cacheKey = 'geolocated_ips';
   protected $cacheTags = ['geoip'];
   protected $locatedAddresses = [];
+  protected $config = [];
 
   /**
-   * Constructs a new GuardFactory object.
+   * Constructs a new GeoLocation object.
    *
-   * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
-   *   The service container.
-   * @param \Drupal\geoip\GeoLocatorsManagerInterface $geo_locators_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $geolocators_manager
    *   The geolocation locator plugin manager service to use.
+   * @param \CommerceGuys\Intl\Country\CountryRepositoryInterface $country_repository
+   *   The country repository service to use.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   Cache backend instance to use.
    */
-  public function __construct(ContainerInterface $container, GeoLocatorsManagerInterface $geo_locators_manager, CacheBackendInterface $cache_backend) {
-    $this->container = $container;
-    $this->geoLocatorsManager = $geo_locators_manager;
-
+  public function __construct(PluginManagerInterface $geolocators_manager, CountryRepositoryInterface $country_repository, ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_backend) {
+    $this->geoLocatorManager = $geolocators_manager;
+    $this->countryRepository = $country_repository;
+    $this->configFactory = $config_factory;
     $this->cacheBackend = $cache_backend;
+    $this->config = $this->configFactory->get('geoip.geolocation');
+  }
+
+  /**
+   * Gets the identifier of the default geolocator plugin.
+   *
+   * @return string
+   *   Identifier of the default geolocator plugin.
+   */
+  public function getGeoLocatorId() {
+    return $this->config['plugin_id'];
+  }
+
+  /**
+   * Gets an instance of the default geolocator plugin.
+   *
+   * @return \Drupal\geoip\Plugin\GeoLocator\GeoLocatorInterface
+   *   Instance of the default geolocator plugin.
+   */
+  public function getGeoLocator() {
+    return $this->geoLocatorManager->createInstance($this->config['plugin_id']);
   }
 
   /**
@@ -67,19 +100,11 @@ class GeoLocation {
         $this->locatedAddresses[$ip_address] = $cache->data;
       }
       else {
-        $result = NULL;
-        foreach ($this->geoLocatorsManager->getLocators() as $locator) {
-          $result = $locator->geolocate($ip_address);
+        $geolocator = $this->getGeoLocator();
 
-          // If we have a result, break the loop and preserve response.
-          if ($result !== NULL) {
-            // @todo add to service def.
-            // @todo should we initiate at return & not cache country object?
-            /** @var \Drupal\address\Repository\CountryRepository $country_repository */
-            $country_repository = \Drupal::service('address.country_repository');
-            $result = $country_repository->get($result);
-            break;
-          }
+        $result = $geolocator->geolocate($ip_address);
+        if ($result) {
+          $result = $this->countryRepository->get($result);
         }
 
         $this->locatedAddresses[$ip_address] = $result;

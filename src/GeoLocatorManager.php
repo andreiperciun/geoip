@@ -15,7 +15,7 @@ use Drupal\Core\Plugin\DefaultPluginManager;
 /**
  * Plugin manager for geolocator plugins.
  */
-class GeoLocatorsManager extends DefaultPluginManager implements GeoLocatorsManagerInterface {
+class GeoLocatorManager extends DefaultPluginManager {
 
   /**
    * {@inheritdoc}
@@ -50,28 +50,6 @@ class GeoLocatorsManager extends DefaultPluginManager implements GeoLocatorsMana
     parent::__construct('Plugin/GeoLocator', $namespaces, $module_handler, $interface, $annotation);
     $this->alterInfo('geolocator');
     $this->setCacheBackend($cache_backend, 'geolocator_plugins', ['geoip']);
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getLocators() {
-    if (empty($this->instances)) {
-      if ($cache = $this->cacheBackend->get($this->cacheKey)) {
-        $locators = $cache->data;
-      }
-      else {
-        $locators = $this->getDefinitions();
-        uasort($locators, array('Drupal\Component\Utility\SortArray', 'sortByWeightElement'));
-        $this->cacheBackend->set($this->cacheKey, $locators, Cache::PERMANENT, $this->cacheTags);
-      }
-
-      foreach ($locators as $plugin_id => $definition) {
-        $this->instances[$plugin_id] = $this->createInstance($plugin_id);
-      }
-    }
-
-    return $this->instances;
   }
 
 }

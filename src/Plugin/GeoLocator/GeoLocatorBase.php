@@ -1,13 +1,11 @@
 <?php
+
 /**
- * Created by PhpStorm.
- * User: mglaman
- * Date: 12/29/15
- * Time: 3:58 PM
+ * @file
+ * Contains \Drupal\geoip\Plugin\GeoLocator\GeoLocatorBase.
  */
 
 namespace Drupal\geoip\Plugin\GeoLocator;
-
 
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\views\Plugin\views\PluginBase;
@@ -38,10 +36,4 @@ abstract class GeoLocatorBase extends PluginBase implements GeoLocatorInterface,
     return $this->pluginDefinition['description'];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getWeight() {
-    return (int) $this->pluginDefinition['weight'];
-  }
 }

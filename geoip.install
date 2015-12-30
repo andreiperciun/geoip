@@ -25,8 +25,8 @@ function geoip_requirements($phase) {
   }
 
   if ($phase === 'runtime') {
-    /** @var \Drupal\geoip\GeoLocatorsManagerInterface $geolocator_manager */
-    $geolocator_manager = \Drupal::service('plugin.manager.geolocators');
+    /** @var \Drupal\geoip\GeoLocatorManagerInterface $geolocator_manager */
+    $geolocator_manager = \Drupal::service('plugin.manager.geolocator');
 
     /** @var \Drupal\geoip\Plugin\GeoLocator\Local $local_geolocator */
     $local_geolocator = $geolocator_manager->createInstance('local');
