@@ -16,7 +16,7 @@ use Drupal\Tests\UnitTestCase;
  *
  * @coversDefaultClass \Drupal\geoip\Plugin\GeoLocator\Cdn
  *
- * @group GeoIP
+ * @group geoip
  */
 class CdnGeoLocatorTest extends UnitTestCase {
 

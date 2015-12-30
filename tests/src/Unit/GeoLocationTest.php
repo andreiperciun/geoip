@@ -21,7 +21,7 @@ use CommerceGuys\Intl\Country\CountryInterface;
  *
  * @coversDefaultClass \Drupal\geoip\GeoLocation
  *
- * @group GeoIP
+ * @group geoip
  */
 class GeoLocationTest extends UnitTestCase {
 
