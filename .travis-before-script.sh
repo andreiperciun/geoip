@@ -21,6 +21,8 @@ cd "$DRUPAL_TI_DRUPAL_DIR"
 # Ensure the module is linked into the codebase.
 drupal_ti_ensure_module_linked
 
+drush dl address
+
 # Initialize composer_manager.
 php modules/composer_manager/scripts/init.php
 composer drupal-rebuild
