@@ -8,72 +8,71 @@
  * Implements hook_requirements().
  */
 function geoip_requirements($phase) {
-  $requirements = array();
-  // Ensure translations don't break at install time.
-  $t = get_t();
+  $requirements = [];
 
   // Test for a valid GeoIP database.
-  $requirements['geoip_database'] = array(
-    'title' => $t('GeoIP Database'),
+  $requirements['geoip_local_database'] = array(
+    'title' => t('GeoIP Local Database'),
   );
 
-  // Check if the required libraries are available.
-  module_load_include('module', 'libraries');
-  $library_v1 = libraries_detect('geoip-api-php');
-  $library_v2 = libraries_detect('GeoIP2-php');
-  $library_v2_phar = libraries_detect('GeoIP2-phar');
-
-  if (variable_get('geoip_db_version', 2) == 1 && empty($library_v1['installed'])) {
-    $requirements['geoip_api_v1'] = array(
-      'title' => $t('GeoIP Library V1 - legacy'),
-    );
-    $message = $t('Maxmind API v1 not found. You need to install the API in order to use this module with this database version. Please see INSTALL.txt for further information');
-    $requirements['geoip_api_v1']['value'] = $t('Maxmind API v1 missing!');
-    $requirements['geoip_api_v1']['description'] = $message;
-    $requirements['geoip_api_v1']['severity'] = ($phase == 'runtime') ? REQUIREMENT_ERROR : REQUIREMENT_INFO;
+  if ($phase === 'install') {
+    if (!class_exists('\GeoIp2\Database\Reader')) {
+      $requirements['geoip_local_database'] = [
+        'description' => t("GeoIP requires the geoip2/geoip2 library for local look ups."),
+        'severity' => REQUIREMENT_ERROR,
+      ];
+    }
   }
 
-  if (variable_get('geoip_db_version', 2) == 2 && empty($library_v2['installed']) && empty($library_v2_phar['installed'])) {
-    $requirements['geoip_api_v2'] = array(
-      'title' => $t('GeoIP Library V2'),
-    );
-    $message = $t('Maxmind API v2 not found. You need to install the API in order to use this module with this database version. Please see INSTALL.txt for further information');
-    $requirements['geoip_api_v2']['value'] = $t('Maxmind API v2 missing!');
-    $requirements['geoip_api_v2']['description'] = $message;
-    $requirements['geoip_api_v2']['severity'] = ($phase == 'runtime') ? REQUIREMENT_ERROR : REQUIREMENT_INFO;
-  }
+  if ($phase === 'runtime') {
+    /** @var \Drupal\geoip\GeoLocatorsManagerInterface $geolocator_manager */
+    $geolocator_manager = \Drupal::service('plugin.manager.geolocators');
 
-  $database_link = 'http://dev.maxmind.com/geoip/geoip2/geolite2/#Downloads';
-  if (variable_get('geoip_db_version', 2) == 1) {
-    $database_link = 'http://dev.maxmind.com/geoip/legacy/downloadable/';
-  }
+    /** @var \Drupal\geoip\Plugin\GeoLocator\Local $local_geolocator */
+    $local_geolocator = $geolocator_manager->createInstance('local');
 
-  if (!($file = variable_get('geoip_data_file')) || !file_exists($file)) {
-    $requirements['geoip_database']['value'] = $t('Missing');
-    $requirements['geoip_database']['description'] = $t('The GeoIP database file is missing or not configured. Download the latest file at <a href="@url">Maxmind.com</a>.', array('@url' => $database_link));
-    $requirements['geoip_database']['severity'] = ($phase == 'runtime') ? REQUIREMENT_ERROR : REQUIREMENT_ERROR;
-  }
-  else {
-    $mtime = filemtime($file);
-    if ($mtime < strtotime('1 months ago')) {
-      $requirements['geoip_database']['value'] = $t('Out of date!');
-      $requirements['geoip_database']['description'] = $t('The GeoIP database file is more than a month old. Download the latest file at <a href="@url">Maxmind.com</a>.', array('@url' => $database_link));
-      $requirements['geoip_database']['severity'] = REQUIREMENT_WARNING;
+    $city_uri = $local_geolocator->getScheme() . 'GeoLite2-City.mmdb';
+    $country_uri = $local_geolocator->getScheme() . 'GeoLite2-Country.mmdb';
+
+    if (file_exists($city_uri)) {
+      $requirements['geoip_local_database'] = [
+        'description' => t('GeoIP local database plugin will use the Maxmind City GeoIP database.'),
+        'severity' => REQUIREMENT_OK,
+      ];
+      $active_uri = $city_uri;
+    }
+    elseif (file_exists($country_uri)) {
+      $requirements['geoip_local_database'] = [
+        'description' => t('GeoIP local database plugin will use the Maxmind Country GeoIP database.'),
+        'severity' => REQUIREMENT_OK,
+      ];
+      $active_uri = $country_uri;
     }
     else {
-      $requirements['geoip_database']['value'] = $t('Installed and up to date.');
+      $requirements['geoip_local_database'] = [
+        'description' => t('GeoIP local database plugin could not find a Maxmind GeoIP database.'),
+        'severity' => REQUIREMENT_WARNING,
+      ];
+
+      // Return requirements, since we can't report on the age of the database.
+      return $requirements;
+    }
+
+    $requirements['geoip_local_database_age'] = array(
+      'title' => t('GeoIP Local Database Age'),
+    );
+
+    $mtime = filemtime($active_uri);
+    if ($mtime < strtotime('1 months ago')) {
+      $database_link = 'http://dev.maxmind.com/geoip/geoip2/geolite2/#Downloads';
+      $requirements['geoip_local_database_age']['value'] = t('Out of date!');
+      $requirements['geoip_local_database_age']['description'] = t('The GeoIP database file is more than a month old. Download the latest file at <a href="@url">Maxmind.com</a>.', array('@url' => $database_link));
+      $requirements['geoip_local_database_age']['severity'] = REQUIREMENT_WARNING;
+    }
+    else {
+      $requirements['geoip_local_database_age']['value'] = t('Installed and up to date.');
     }
   }
 
   return $requirements;
-}
-
-/**
- * Implements hook_uninstall().
- */
-function geoip_uninstall() {
-  // Delete the variable with the path to the database.
-  variable_del('geoip_data_file');
-  variable_del('geoip_debug');
-  variable_del('geoip_db_version');
 }

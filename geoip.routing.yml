@@ -1,0 +1,7 @@
+geoip.configure:
+  path: '/admin/config/system/geoip'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'Configure GeoIP'
+  requirements:
+    _permission: 'administer site configuration'
