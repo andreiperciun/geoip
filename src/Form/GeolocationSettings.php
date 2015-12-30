@@ -57,7 +57,7 @@ class GeolocationSettings extends ConfigFormBase {
         $this->t('No'),
         $this->t('Yes'),
       ],
-      '#default_value' => $config->get('debug'),
+      '#default_value' => (int) $config->get('debug'),
     ];
 
     return parent::buildForm($form, $form_state);

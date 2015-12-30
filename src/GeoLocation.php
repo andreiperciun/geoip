@@ -74,7 +74,7 @@ class GeoLocation {
    *   Identifier of the default geolocator plugin.
    */
   public function getGeoLocatorId() {
-    return $this->config['plugin_id'];
+    return $this->config->get('plugin_id');
   }
 
   /**
@@ -84,7 +84,7 @@ class GeoLocation {
    *   Instance of the default geolocator plugin.
    */
   public function getGeoLocator() {
-    return $this->geoLocatorManager->createInstance($this->config['plugin_id']);
+    return $this->geoLocatorManager->createInstance($this->config->get('plugin_id'));
   }
 
   /**

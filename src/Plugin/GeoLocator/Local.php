@@ -7,7 +7,6 @@
 
 namespace Drupal\geoip\Plugin\GeoLocator;
 
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use GeoIp2\Database\Reader;
 use GeoIp2\Exception\AddressNotFoundException;
 use MaxMind\Db\Reader\InvalidDatabaseException;
@@ -23,12 +22,11 @@ use MaxMind\Db\Reader\InvalidDatabaseException;
  * )
  */
 class Local extends GeoLocatorBase {
-  use StringTranslationTrait;
 
   const GEOLITE_CITY_DB      = 'http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz';
   const GEOLITE_COUNTRY_DB = 'http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.mmdb.gz';
 
-  protected $scheme = 'public://';
+  protected $scheme = 'public';
 
   /**
    * {@inheritdoc}
@@ -42,12 +40,21 @@ class Local extends GeoLocatorBase {
 
     try {
       $record = $reader->country($ip_address);
+
+      if (\Drupal::config('geoip.geolocation')->get('debug')) {
+        \Drupal::logger('geoip')->notice($this->t('Discovered %ip_address in the Maxmind local database', [
+          '%ip_address' => $ip_address,
+        ]));
+      }
+
       return $record->country->isoCode;
     }
     catch (AddressNotFoundException $e) {
-      \Drupal::logger('geoip')->notice($this->t('Unable to look up %ip_address in the Maxmind local database', [
-        '%ip_address' => $ip_address,
-      ]));
+      if (\Drupal::config('geoip.geolocation')->get('debug')) {
+        \Drupal::logger('geoip')->notice($this->t('Unable to look up %ip_address in the Maxmind local database', [
+          '%ip_address' => $ip_address,
+        ]));
+      }
       return NULL;
     }
     catch (InvalidDatabaseException $e) {
@@ -63,8 +70,8 @@ class Local extends GeoLocatorBase {
    *   Reader that can parse Mindmax datasets.
    */
   protected function getReader() {
-    $city_uri = $this->getScheme() . 'GeoLite2-City.mmdb';
-    $country_uri = $this->getScheme() . 'GeoLite2-Country.mmdb';
+    $city_uri = $this->getScheme() . '://GeoLite2-City.mmdb';
+    $country_uri = $this->getScheme() . '://GeoLite2-Country.mmdb';
 
     if (file_exists($city_uri)) {
       $reader = new Reader($city_uri);
@@ -78,29 +85,6 @@ class Local extends GeoLocatorBase {
     }
 
     return $reader;
-  }
-
-  /**
-   * Gets the URI for the Maxmind dataset.
-   *
-   * @return bool|string
-   *   Returns FALSE if the .dat does not exist, else the URI.
-   */
-  protected function getDataset() {
-    $city_uri = $this->getScheme() . 'GeoLite2-City.mmdb';
-    $country_uri = $this->getScheme() . 'GeoLite2-Country.mmdb';
-
-    if (file_exists($city_uri)) {
-      $uri = $city_uri;
-    }
-    elseif (file_exists($country_uri)) {
-      $uri = $country_uri;
-    }
-    else {
-      $uri = FALSE;
-    }
-
-    return $uri;
   }
 
   /**

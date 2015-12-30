@@ -34,8 +34,19 @@ class Cdn extends GeoLocatorBase {
       $country_code = $this->checkCustomHeader();
     }
     else {
-      // Could no geolocate based off of CDN.
+      // Could not geolocate based off of CDN.
+      if (\Drupal::config('geoip.geolocation')->get('debug')) {
+        \Drupal::logger('geoip')->notice($this->t('Unable to look up %ip_address via CDN header', [
+          '%ip_address' => $ip_address,
+        ]));
+      }
       return NULL;
+    }
+
+    if (\Drupal::config('geoip.geolocation')->get('debug')) {
+      \Drupal::logger('geoip')->notice($this->t('Discovered %ip_address via CDN header', [
+        '%ip_address' => $ip_address,
+      ]));
     }
 
     return $country_code;
