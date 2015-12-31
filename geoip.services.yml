@@ -1,0 +1,7 @@
+services:
+  geoip.geolocation:
+    class: Drupal\geoip\GeoLocation
+    arguments: ['@plugin.manager.geolocator', '@address.country_repository', '@config.factory', '@cache.discovery']
+  plugin.manager.geolocator:
+    class: Drupal\geoip\GeoLocatorManager
+    arguments: ['@container.namespaces', '@module_handler', '@cache.discovery']

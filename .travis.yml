@@ -7,8 +7,11 @@
 #   https://github.com/sonnym/travis-ci-drupal-module-example
 
 language: php
-
 sudo: false
+
+cache:
+  directories:
+    - $HOME/.composer/cache
 
 php:
   - 5.5
@@ -82,7 +85,7 @@ env:
     - DRUPAL_TI_COVERAGE_FILE="build/logs/clover.xml"
 
     # Debug options
-    #- DRUPAL_TI_DEBUG="-x -v"
+    - DRUPAL_TI_DEBUG="-x -v"
     # Set to "all" to output all files, set to e.g. "xvfb selenium" or "selenium",
     # etc. to only output those channels.
     #- DRUPAL_TI_DEBUG_FILE_OUTPUT="selenium xvfb webserver"
@@ -105,6 +108,10 @@ before_install:
   - git config --global github.accesstoken $GITHUB_OAUTH_TOKEN
   - composer global require "lionsad/drupal_ti:dev-master"
   - drupal-ti before_install
+  # Codesniffer and Coder
+  - composer global require "squizlabs/php_codesniffer:2.0.*@dev"
+  - composer global require drupal/coder:8.2.0-beta1
+  - ln -s ~/.composer/vendor/drupal/coder/coder_sniffer/Drupal ~/.composer/vendor/squizlabs/php_codesniffer/CodeSniffer/Standards/
 
 install:
   - drupal-ti install
@@ -114,7 +121,8 @@ before_script:
   - drupal-ti before_script
 
 script:
-  - drupal-ti script
+  - drupal-ti --include .travis-phpcs.sh
+  - export SIMPLETEST_DB=mysql://root:@127.0.0.1/drupal_travis_db; drupal-ti script
 
 after_script:
   - drupal-ti after_script
