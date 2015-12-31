@@ -50,16 +50,6 @@ class GeolocationSettings extends ConfigFormBase {
       ];
     }
 
-    $form['debug'] = [
-      '#type' => 'radios',
-      '#title' => $this->t('Enable debugging logs'),
-      '#options' => [
-        $this->t('No'),
-        $this->t('Yes'),
-      ],
-      '#default_value' => (int) $config->get('debug'),
-    ];
-
     return parent::buildForm($form, $form_state);
   }
 
@@ -69,7 +59,6 @@ class GeolocationSettings extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->config('geoip.geolocation')
          ->set('plugin_id', $form_state->getValue('plugin_id'))
-         ->set('debug', $form_state->getValue('debug'))
          ->save();
 
     parent::submitForm($form, $form_state);

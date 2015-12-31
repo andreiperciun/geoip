@@ -37,7 +37,6 @@ class GeoLocationTest extends UnitTestCase {
 
     $config_factory->get('geoip.geolocation')->willReturn([
       'plugin_id' => 'local',
-      'debug' => FALSE,
     ]);
 
     $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());
@@ -58,7 +57,6 @@ class GeoLocationTest extends UnitTestCase {
     $geolocators_manager->createInstance('local')->willReturn($this->prophesize(GeoLocatorInterface::class)->reveal());
     $config_factory->get('geoip.geolocation')->willReturn([
       'plugin_id' => 'local',
-      'debug' => FALSE,
     ]);
 
     $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());
@@ -89,7 +87,6 @@ class GeoLocationTest extends UnitTestCase {
 
     $config_factory->get('geoip.geolocation')->willReturn([
       'plugin_id' => 'local',
-      'debug' => FALSE,
     ]);
 
     $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());

@@ -40,21 +40,9 @@ class Local extends GeoLocatorBase {
 
     try {
       $record = $reader->country($ip_address);
-
-      if (\Drupal::config('geoip.geolocation')->get('debug')) {
-        \Drupal::logger('geoip')->notice($this->t('Discovered %ip_address in the Maxmind local database', [
-          '%ip_address' => $ip_address,
-        ]));
-      }
-
       return $record->country->isoCode;
     }
     catch (AddressNotFoundException $e) {
-      if (\Drupal::config('geoip.geolocation')->get('debug')) {
-        \Drupal::logger('geoip')->notice($this->t('Unable to look up %ip_address in the Maxmind local database', [
-          '%ip_address' => $ip_address,
-        ]));
-      }
       return NULL;
     }
     catch (InvalidDatabaseException $e) {

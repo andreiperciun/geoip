@@ -5,6 +5,3 @@ geoip.geolocation:
     plugin_id:
       type: string
       label: 'Plugin ID of geolocator to use.'
-    debug:
-      type: boolean
-      label: 'Run in debug mode.'
