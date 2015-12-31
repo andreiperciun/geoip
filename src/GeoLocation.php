@@ -19,8 +19,6 @@ use Drupal\Core\Config\ConfigFactoryInterface;
  */
 class GeoLocation {
 
-  use UseCacheBackendTrait;
-
   /**
    * Plugin manager for GeoLocator plugins.
    *
@@ -56,14 +54,11 @@ class GeoLocation {
    *   The country repository service to use.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
-   * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
-   *   Cache backend instance to use.
    */
-  public function __construct(PluginManagerInterface $geolocators_manager, CountryRepositoryInterface $country_repository, ConfigFactoryInterface $config_factory, CacheBackendInterface $cache_backend) {
+  public function __construct(PluginManagerInterface $geolocators_manager, CountryRepositoryInterface $country_repository, ConfigFactoryInterface $config_factory) {
     $this->geoLocatorManager = $geolocators_manager;
     $this->countryRepository = $country_repository;
     $this->configFactory = $config_factory;
-    $this->cacheBackend = $cache_backend;
     $this->config = $this->configFactory->get('geoip.geolocation');
   }
 
@@ -98,20 +93,14 @@ class GeoLocation {
    */
   public function geolocate($ip_address) {
     if (!isset($this->locatedAddresses[$ip_address])) {
-      if ($cache = $this->cacheBackend->get($this->cacheKey . ':' . $ip_address)) {
-        $this->locatedAddresses[$ip_address] = $cache->data;
-      }
-      else {
-        $geolocator = $this->getGeoLocator();
+      $geolocator = $this->getGeoLocator();
 
-        $result = $geolocator->geolocate($ip_address);
-        if ($result) {
-          $result = $this->countryRepository->get($result);
-        }
-
-        $this->locatedAddresses[$ip_address] = $result;
-        $this->cacheBackend->set($this->cacheKey, $this->locatedAddresses, Cache::PERMANENT, $this->cacheTags);
+      $result = $geolocator->geolocate($ip_address);
+      if ($result) {
+        $result = $this->countryRepository->get($result);
       }
+
+      $this->locatedAddresses[$ip_address] = $result;
     }
 
     return $this->locatedAddresses[$ip_address];

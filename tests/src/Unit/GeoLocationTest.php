@@ -34,14 +34,13 @@ class GeoLocationTest extends UnitTestCase {
     $geolocators_manager = $this->prophesize(GeoLocatorManager::class);
     $country_repository = $this->prophesize(CountryRepositoryInterface::class);
     $config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $cache_backend = $this->prophesize(CacheBackendInterface::class);
 
     $config_factory->get('geoip.geolocation')->willReturn([
       'plugin_id' => 'local',
       'debug' => FALSE,
     ]);
 
-    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal(), $cache_backend->reveal());
+    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());
 
     $this->assertEquals('local', $geolocation->getGeoLocatorId());
   }
@@ -55,7 +54,6 @@ class GeoLocationTest extends UnitTestCase {
     $geolocators_manager = $this->prophesize(GeoLocatorManager::class);
     $country_repository = $this->prophesize(CountryRepositoryInterface::class);
     $config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $cache_backend = $this->prophesize(CacheBackendInterface::class);
 
     $geolocators_manager->createInstance('local')->willReturn($this->prophesize(GeoLocatorInterface::class)->reveal());
     $config_factory->get('geoip.geolocation')->willReturn([
@@ -63,7 +61,7 @@ class GeoLocationTest extends UnitTestCase {
       'debug' => FALSE,
     ]);
 
-    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal(), $cache_backend->reveal());
+    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());
     $locator = $geolocation->getGeoLocator();
 
     $this->assertTrue($locator instanceof GeoLocatorInterface);
@@ -78,7 +76,6 @@ class GeoLocationTest extends UnitTestCase {
     $geolocators_manager = $this->prophesize(GeoLocatorManager::class);
     $country_repository = $this->prophesize(CountryRepositoryInterface::class);
     $config_factory = $this->prophesize(ConfigFactoryInterface::class);
-    $cache_backend = $this->prophesize(CacheBackendInterface::class);
 
     $locator = $this->prophesize(GeoLocatorInterface::class);
     $locator->geolocate('127.0.0.1')->willReturn(NULL);
@@ -95,7 +92,7 @@ class GeoLocationTest extends UnitTestCase {
       'debug' => FALSE,
     ]);
 
-    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal(), $cache_backend->reveal());
+    $geolocation = new GeoLocation($geolocators_manager->reveal(), $country_repository->reveal(), $config_factory->reveal());
 
     $this->assertNull($geolocation->geolocate('127.0.0.1'));
     $this->assertTrue($geolocation->geolocate('2605:a000:140d:c18f:5995:dfe1:7914:4b4f') instanceof CountryInterface);
